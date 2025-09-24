@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres_centralpleingaz
+    environment:
+      POSTGRES_USER: pleingaz
+      POSTGRES_PASSWORD: pleingaz
+      POSTGRES_DB: centralpleingaz
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./init-schema.sql:/docker-entrypoint-initdb.d/00-schema.sql  # Script pour créer le schéma
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pleingaz -d centralpleingaz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak_centralpleingaz
+    volumes:
+      - ./keycloak-import:/opt/keycloak/data/import
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/centralpleingaz?currentSchema=keycloak_schema
+      KC_DB_USERNAME: pleingaz
+      KC_DB_PASSWORD: pleingaz
+      KC_DB_SCHEMA: keycloak_schema
+      KC_HOSTNAME: localhost
+      KC_IMPORT: /opt/keycloak/data/import/pleingaz-complete.json
+      KC_HOSTNAME_PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pg_data:
