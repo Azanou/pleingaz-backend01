@@ -45,20 +45,20 @@ public interface VenteRepository extends JpaRepository<Vente, Integer> {
 
     // liste des nomvendeur + montant vendu la journee
     @Query("SELECT new com.monpleingaz.centralpleingaz01.dto.VendeurClassementDTO(" +
-            "v.vendeur.nomVendeur, SUM(v.netAPayer)) " +
+            "v.vendeur.nomEmployer, SUM(v.netAPayer)) " +
             "FROM Vente v WHERE v.dateVente >= :startOfDay AND v.dateVente < :endOfDay " +
-            "GROUP BY v.vendeur.nomVendeur " +
+            "GROUP BY v.vendeur.nomEmployer " +
             "ORDER BY SUM(v.netAPayer) DESC")
     List<VendeurClassementDTO> getClassementVendeursJournalier(LocalDateTime startOfDay, LocalDateTime endOfDay);
 
     // liste des articles vendus avec quantite + tonneMetrique
     @Query("SELECT new com.monpleingaz.centralpleingaz01.dto.VendeurArticleVenduDTO(" +
             "v.article.nomArticle, SUM(v.quantite), SUM(v.tonneMetrique)) " +
-            "FROM Vente v WHERE v.dateVente >= :startOfDay AND v.dateVente < :endOfDay AND v.vendeur.nomVendeur = :nomVendeur "
+            "FROM Vente v WHERE v.dateVente >= :startOfDay AND v.dateVente < :endOfDay AND v.vendeur.nomEmployer = :nomEmployer "
             +
             "GROUP BY v.article.nomArticle")
     List<VendeurArticleVenduDTO> getArticlesVendusParVendeur(LocalDateTime startOfDay, LocalDateTime endOfDay,
-            String nomVendeur);
+            String nomEmployer);
 
     // Ici , on a les meilleures agences par jour
     @Query("SELECT new com.monpleingaz.centralpleingaz01.dto.AgenceClassementDTO(" +
